@@ -183,6 +183,14 @@ body[data-view="home"] #view{display:none}
 
 .pic,.thumb,.d-hero{position:relative}
 .pic img,.thumb img,.d-hero > img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gal{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.gal::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;height:100%;position:relative;scroll-snap-align:start}
+.slide svg{width:100%;height:100%;display:block}
+.slide img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dots{position:absolute;left:0;right:0;bottom:40px;display:flex;justify-content:center;gap:7px;pointer-events:none}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 0 3px rgba(0,0,0,.3)}
+.dots i.on{background:#fff}
 </style>
 </head>
 <body data-view="home">
@@ -376,7 +384,7 @@ function photoUrl(v) {
   v = (v || '').trim();
   if (!v) return '';
   const drive = v.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=)([\w-]{10,})/);
-  if (drive) return 'https://lh3.googleusercontent.com/d/' + drive[1];
+  if (drive) return 'https://lh3.googleusercontent.com/d/' + drive[1] + '=w1200';
   if (/^https?:\/\//i.test(v)) return v;
   return 'photos/' + v.split('/').map(encodeURIComponent).join('/');
 }
@@ -390,10 +398,10 @@ function toSortie(o, i, used) {
     featured: /^(oui|o|x|yes|y|1|vrai|true)$/.test(norm(o.en_ce_moment)),
     age: o.age || '', price: o.prix || '', where: o.arrondissement || '', place: o.lieu || '',
     duration: o.duree || '', metro: o.metro || '', url: o.lien_de_reservation || o.lien_reservation || o.reservation || o.lien || '',
-    why: o.pourquoi_jaime || '', tip: o.mon_conseil || '', photo: photoUrl(o.photo), art: o._art || '', order: i
+    why: o.pourquoi_jaime || '', tip: o.mon_conseil || '', photos: String(o.photo || o.photos || '').split(/[\s,;]+/).map(photoUrl).filter(Boolean), art: o._art || '', order: i
   };
 }
-const build = list => { const used = new Set(); return list.map((o, i) => toSortie(o, i, used)); };
+const build = list => { const used = new Set(); return list.map((o, i) => { const s = toSortie(o, i, used); s.photo = s.photos[0] || ''; return s; }); };
 
 let SORTIES = [];
 let STATE = 'loading';
@@ -450,7 +458,7 @@ function renderDetail(s) {
     .filter(f => f[1]).map(f => `<span>${f[0]}${esc(f[1])}</span>`).join('');
   const url = safeUrl(s.url);
   return `
-    <div class="d-hero">${visual(s)}
+    <div class="d-hero">${s.photos.length > 1 ? `<div class="gal" id="gal">${s.photos.map((p, i) => `<div class="slide">${ART[s.art] || ART.generic}<img src="${esc(p)}" alt="Photo ${i + 1} sur ${s.photos.length}" loading="${i ? 'lazy' : 'eager'}" onerror="this.remove()"></div>`).join('')}</div><div class="dots" aria-hidden="true">${s.photos.map((p, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : visual(s)}
       <div class="d-top">
         <button class="round" data-go="" aria-label="Retour">${ICON.back}</button>
         <div>
@@ -485,7 +493,14 @@ function route() {
   const h = location.hash.slice(1), changed = h !== lastHash; lastHash = h;
   let m, s;
   document.title = 'Mum in Paris';
-  if ((m = h.match(/^sortie\/(.+)$/)) && (s = find(decodeURIComponent(m[1])))) { show('detail', renderDetail(s)); document.title = s.t + ' · Mum in Paris'; }
+  if ((m = h.match(/^sortie\/(.+)$/)) && (s = find(decodeURIComponent(m[1])))) {
+    show('detail', renderDetail(s)); document.title = s.t + ' · Mum in Paris';
+    const gal = document.getElementById('gal');
+    if (gal) gal.addEventListener('scroll', () => {
+      const n = Math.round(gal.scrollLeft / gal.clientWidth);
+      gal.parentNode.querySelectorAll('.dots i').forEach((d, i) => d.classList.toggle('on', i === n));
+    }, { passive: true });
+  }
   else if (h === 'toutes') show('all', renderAll());
   else { renderHome(); show('home'); }
   if (changed) window.scrollTo(0, 0);
