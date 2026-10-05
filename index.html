@@ -237,6 +237,7 @@ body[data-view="home"] #view{display:none}
 .avoir-note p{margin:0;font-size:14px;line-height:1.55}
 .star-p{margin-left:2px}
 .partner-note{margin:0;font-size:12px;line-height:1.45;color:var(--ink-soft);text-align:center;max-width:44ch}
+.leaflet-tile-pane{filter:saturate(.55) sepia(.12) brightness(1.03)}
 </style>
 </head>
 <body data-view="home">
@@ -788,9 +789,9 @@ async function drawMap(focusId) {
   msg.remove();
   if (mapObj) { try { mapObj.remove(); } catch (e) {} mapObj = null; }
   mapObj = L.map('map', { zoomControl: true, attributionControl: true }).setView([48.8566, 2.3522], 12);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19, subdomains: 'abcd',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">les contributeurs d’OpenStreetMap</a>'
   }).addTo(mapObj);
   const pinSvg = c => `<svg viewBox="0 0 24 24"><path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z" fill="${c}" stroke="#fff" stroke-width="1.5"/><path d="M12 13.2c-2.2-1.6-3-2.7-3-3.6 0-1 .8-1.6 1.6-1.6.6 0 1.1.4 1.4.8.3-.4.8-.8 1.4-.8.8 0 1.6.6 1.6 1.6 0 .9-.8 2-3 3.6z" fill="#fff"/></svg>`;
   const markers = [];
