@@ -228,6 +228,15 @@ body[data-view="home"] #view{display:none}
 .map-note{padding:8px 18px 0;font-size:13px;color:var(--ink-soft)}
 .d-map{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:700;color:var(--pink-ink);text-decoration:none}
 .d-map svg{width:16px;height:16px}
+.sortbar{display:flex;gap:8px;overflow-x:auto;padding:0 18px 14px;scrollbar-width:none}
+.sortbar::-webkit-scrollbar{display:none}
+.sortbar .chip{flex:none;padding:7px 13px;font-size:13px}
+.b-avoir{background:var(--sky);color:var(--sky-ink)}
+.avoir-note{background:var(--sky);color:var(--ink);border-radius:16px;padding:14px 16px;margin:0 0 22px}
+.avoir-note strong{display:block;font-size:15px;margin-bottom:2px}
+.avoir-note p{margin:0;font-size:14px;line-height:1.55}
+.star-p{margin-left:2px}
+.partner-note{margin:0;font-size:12px;line-height:1.45;color:var(--ink-soft);text-align:center;max-width:44ch}
 </style>
 </head>
 <body data-view="home">
@@ -366,6 +375,7 @@ const ICON = {
 
 /* Illustrations en attendant les photos */
 const ART = {
+  food:'<svg viewBox="0 0 72 72"><rect width="72" height="72" fill="#FBE0E8"/><path d="M22 44h28l-3 12H25z" fill="#E5638C"/><path d="M20 44q16-24 32 0z" fill="#FBEBC0" stroke="#1E2A5A" stroke-width="2"/><circle cx="36" cy="22" r="4" fill="#E5638C"/><path d="M28 36q3-3 6 0M38 33q3-3 6 0" fill="none" stroke="#E5638C" stroke-width="2" stroke-linecap="round"/><path d="M22 44h28" stroke="#1E2A5A" stroke-width="2"/></svg>',
   stage:'<svg viewBox="0 0 72 72"><rect width="72" height="72" fill="#FBEBC0"/><rect x="8" y="10" width="56" height="6" rx="2" fill="#1E2A5A"/><path d="M10 16h18q-2 18 4 40H10z" fill="#E5638C"/><path d="M62 16H44q2 18-4 40h22z" fill="#E5638C"/><path d="M28 16q-2 18 4 40M44 16q2 18-4 40" fill="none" stroke="#B4405F" stroke-width="1"/><rect x="8" y="56" width="56" height="5" rx="2" fill="#1E2A5A"/><path d="M36 30l1.6 3.4 3.7.5-2.7 2.6.7 3.7-3.3-1.8-3.3 1.8.7-3.7-2.7-2.6 3.7-.5z" fill="#F4C64E"/></svg>',
   generic:'<svg viewBox="0 0 250 140" preserveAspectRatio="xMidYMid slice"><rect width="250" height="140" fill="#FBE0E8"/><rect y="112" width="250" height="28" fill="#F6CBD8"/><g transform="translate(108,30)" fill="none" stroke="#1E2A5A" stroke-width="2" stroke-linejoin="round"><path d="M17 0L18 8 19.5 20 21 26Q24 44 32 62L34 82H26Q24 70 17 67 10 70 8 82H0L2 62Q10 44 13 26L14.5 20 16 8Z"/><path d="M12 26h10M6 48h22"/></g><path transform="translate(146,30) scale(1.3)" d="M7 13C2 9 0 6 0 4 0 1 2 0 4 0c1.5 0 2.5 1 3 2 .5-1 1.5-2 3-2 2 0 4 1 4 4 0 2-2 5-7 9z" fill="#E5638C"/></svg>',
   hat:'<svg viewBox="0 0 250 140" preserveAspectRatio="xMidYMid slice"><rect width="250" height="140" fill="#F6E6DE"/><rect x="0" y="104" width="250" height="36" fill="#EBD3C7"/><g fill="none" stroke="#E2C3B4" stroke-width="1"><path d="M20 104V40h30v64M200 104V40h30v64"/></g><ellipse cx="125" cy="88" rx="62" ry="13" fill="#C9A27E"/><path d="M85 86q4-48 40-48t40 48z" fill="#D9B68F"/><g fill="none" stroke="#A57E5A" stroke-width="1.2"><path d="M92 80q33-10 66 0M96 68q29-9 58 0M103 56q22-7 44 0M112 46q13-4 26 0"/></g></svg>',
@@ -449,9 +459,11 @@ function toSortie(o, i, used) {
   return {
     id, t: o.nom, type: o.categorie || '',
     badge: e.includes('coeur') ? 'coeur' : e.includes('grat') ? 'gratuit' : e.includes('plan') ? 'plan' : '',
+    aVoir: /^(oui|o|x|yes|y|1|vrai|true)$/.test(norm(o.a_voir)) || e.includes('a voir'),
     featured: /^(oui|o|x|yes|y|1|vrai|true)$/.test(norm(o.en_ce_moment)),
     age: o.age || '', price: o.prix || '', where: o.arrondissement || '', place: o.lieu || '',
-    duration: o.duree || '', metro: o.metro || '', url: o.lien_de_reservation || o.lien_reservation || o.reservation || o.lien || '',
+    duration: o.duree || '', metro: o.metro || '', url: (/^https?:\/\//i.test(o.lien_partenaire || '') ? o.lien_partenaire : '') || o.lien_de_reservation || o.lien_reservation || o.reservation || o.lien || '',
+    partner: /^(oui|o|x|yes|y|1|vrai|true)$/.test(norm(o.lien_partenaire)) || /^https?:\/\//i.test(o.lien_partenaire || ''),
     why: o.pourquoi_jaime || '', tip: o.mon_conseil || '', geo: parseGeo(o.coordonnees || o.coordonnees_gps || ''), photos: String(o.photo || o.photos || '').split(/[\s,;]+/).map(photoUrl).filter(Boolean), art: o._art || '', order: i
   };
 }
@@ -461,7 +473,7 @@ let SORTIES = [];
 let STATE = 'loading';
 const find = id => SORTIES.find(x => x.id === id);
 const visual = s => (ART[s.art] || ART.generic) + (s.photo ? `<img src="${esc(s.photo)}" alt="" loading="lazy" onerror="this.remove()">` : '');
-const badgeHtml = s => BADGES[s.badge] ? `<span class="badge ${BADGES[s.badge][0]}">${BADGES[s.badge][1]}</span>` : '';
+const badgeHtml = s => s.aVoir ? `<span class="badge b-avoir">À voir 👀</span>` : BADGES[s.badge] ? `<span class="badge ${BADGES[s.badge][0]}">${BADGES[s.badge][1]}</span>` : '';
 const factsHtml = s => [[ICON.age, s.age], [ICON.pin, s.where], [ICON.price, s.price]].filter(f => f[1]).map(f => `<span>${f[0]}${esc(f[1])}</span>`).join('');
 
 let favs = [];
@@ -471,7 +483,8 @@ const saveFavs = () => { try { localStorage.setItem('mip-favs', JSON.stringify(f
 /* ---------- Accueil ---------- */
 const PICKS = [
   { t: 'Spectacles et théâtre', d: 'Sur scène, en famille', art: 'stage', q: 'type:Spectacle' },
-  { t: 'Sorties gratuites', d: 'Culture, nature, loisirs', art: 'free', q: 'free' }
+  { t: 'Sorties gratuites', d: 'Culture, nature, loisirs', art: 'free', q: 'free' },
+  { t: 'Où manger en famille', d: 'Restaurants et goûters', art: 'food', q: 'type:Manger' }
 ];
 function renderPicks() {
   document.getElementById('picks').innerHTML = PICKS.map(p => {
@@ -500,15 +513,55 @@ function renderHome() {
     </article>`).join('') : `<div class="empty-box" style="flex:1"><p>Les premières sorties arrivent très vite.</p></div>`;
 }
 
+/* ---------- Tri ---------- */
+let SORT = 'new', USERPOS = null;
+const SORTS = [['new', 'Nouveautés'], ['coeur', 'Coups de 🤍'], ['prix', 'Prix'], ['distance', 'Près de moi'], ['az', 'A → Z']];
+function distKm(a, b) {
+  const R = 6371, rad = x => x * Math.PI / 180;
+  const dLat = rad(b[0] - a[0]), dLng = rad(b[1] - a[1]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+function sortList(list) {
+  const l = list.slice();
+  if (SORT === 'new') return l.sort((a, b) => b.order - a.order);
+  if (SORT === 'coeur') return l.sort((a, b) => (b.badge === 'coeur') - (a.badge === 'coeur') || b.order - a.order);
+  if (SORT === 'prix') return l.sort((a, b) => { const x = priceVal(a), y = priceVal(b); return (x == null) - (y == null) || (x || 0) - (y || 0); });
+  if (SORT === 'az') return l.sort((a, b) => a.t.localeCompare(b.t, 'fr'));
+  if (SORT === 'distance' && USERPOS) return l.sort((a, b) => (!a.geo) - (!b.geo) || (a.geo && b.geo ? distKm(USERPOS, a.geo) - distKm(USERPOS, b.geo) : 0));
+  return l;
+}
+function sortBar() {
+  return `<div class="sortbar" role="group" aria-label="Trier par">${SORTS.map(([k, l]) =>
+    `<button class="chip" data-sort="${k}" aria-pressed="${SORT === k}">${l}</button>`).join('')}</div>`;
+}
+function rowCards(list) {
+  return `<div class="list">${sortList(list).map(s => {
+    const d = SORT === 'distance' && USERPOS && s.geo ? distKm(USERPOS, s.geo) : null;
+    const dist = d == null ? '' : `<span>${ICON.map}à ${d < 1 ? Math.round(d * 1000) + ' m' : d.toFixed(1).replace('.', ',') + ' km'}</span>`;
+    return `
+    <button class="row-card" data-open="${esc(s.id)}">
+      <span class="thumb">${visual(s)}</span>
+      <span>${badgeHtml(s)}<h3>${esc(s.t)}</h3><span class="facts">${dist}${factsHtml(s)}</span></span>
+      ${ICON.chev}
+    </button>`;
+  }).join('')}</div>`;
+}
+function askPosition() {
+  if (!navigator.geolocation) { toast('Localisation indisponible sur cet appareil'); SORT = 'new'; route(); return; }
+  toast('Recherche de votre position…');
+  navigator.geolocation.getCurrentPosition(
+    p => { USERPOS = [p.coords.latitude, p.coords.longitude]; route(); },
+    () => { toast('Position non autorisée : tri par nouveautés'); SORT = 'new'; route(); },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+  );
+}
+
 function renderAll() {
   return `<div class="v-head"><button class="icon-btn" data-go="" aria-label="Retour à l’accueil">${ICON.back}</button><h1>${SORTIES.length} sortie${SORTIES.length > 1 ? 's' : ''}</h1></div>
   <p class="v-sub">Toutes les sorties testées et approuvées.</p>
-  <div class="list">${SORTIES.map(s => `
-    <button class="row-card" data-open="${esc(s.id)}">
-      <span class="thumb">${visual(s)}</span>
-      <span>${badgeHtml(s)}<h3>${esc(s.t)}</h3><span class="facts">${factsHtml(s)}</span></span>
-      ${ICON.chev}
-    </button>`).join('')}</div>`;
+  ${sortBar()}
+  ${rowCards(SORTIES)}`;
 }
 
 function renderDetail(s) {
@@ -531,12 +584,14 @@ function renderDetail(s) {
       ${s.where || s.place ? `<p class="loc">${ICON.pin}${esc([s.where, s.place].filter(Boolean).join(', '))}</p>` : ''}
       ${s.geo ? `<a class="d-map" href="#carte/${encodeURIComponent(s.id)}">${ICON.map}Voir sur la carte</a>` : ''}
       ${facts ? `<div class="d-facts">${facts}</div>` : '<div style="height:20px"></div>'}
-      <h2>Pourquoi j’aime ${ICON.heart.replace('fill="none"', 'fill="currentColor"')}</h2>
-      <p class="why ${s.why ? '' : 'empty'}">${s.why ? esc(s.why).replace(/\n/g, '<br>') : 'Mon avis arrive très bientôt.'}</p>
+      ${s.aVoir ? `<div class="avoir-note"><strong>👀 Pas encore testée par nous</strong><p>Je l’ai repérée pour vous, et je vous dirai vite ce qu’on en a pensé !</p></div>` : ''}
+      ${s.aVoir && !s.why ? '' : `<h2>${s.aVoir ? 'Pourquoi elle me tente' : 'Pourquoi j’aime'} ${ICON.heart.replace('fill="none"', 'fill="currentColor"')}</h2>
+      <p class="why ${s.why ? '' : 'empty'}">${s.why ? esc(s.why).replace(/\n/g, '<br>') : 'Mon avis arrive très bientôt.'}</p>`}
       ${s.tip ? `<div class="tip">${ICON.bulb}<div><strong>Mon conseil</strong><p>${esc(s.tip).replace(/\n/g, '<br>')}</p></div></div>` : ''}
     </div>
     <div class="d-bar"><div class="d-bar-in">
-      ${url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="noopener">${ICON.ticket}Réserver</a>` : ''}
+      ${url ? `<a class="btn" href="${esc(url)}" target="_blank" rel="${s.partner ? 'noopener sponsored' : 'noopener'}">${ICON.ticket}Réserver${s.partner ? '<span class="star-p">*</span>' : ''}</a>` : ''}
+      ${url && s.partner ? `<p class="partner-note">*Lien partenaire : aucun surcoût pour vous 🤍</p>` : ''}
       <button class="link-btn" data-share>${ICON.share}Partager cette sortie</button>
     </div></div>`;
 }
@@ -571,10 +626,24 @@ function priceVal(s) {
 }
 function arrNum(s) { const m = norm(s.where).match(/paris\s*(\d{1,2})/); return m ? +m[1] : null; }
 
+const STOP = new Set(['le','la','les','l','de','des','du','d','un','une','et','a','au','aux','en','pour','avec','sur','dans','ou','qui','que','ce','cette','ces','mon','ma','mes','son','sa','ses','on','faire','voir','aller','enfant','enfants','famille','familles','kid','kids','sortie','sorties','idee','idees','activite','activites','paris','petit','petits','petite','petites']);
+const simple = t => norm(t).replace(/['’`]/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+const stem = w => w.length > 3 ? w.replace(/(aux|eaux)$/, 'al').replace(/[sx]$/, '') : w;
+function queryWords(q) {
+  return simple(q).split(' ').filter(w => w && !STOP.has(w)).map(stem);
+}
+function searchText(s) {
+  const badge = (BADGES[s.badge] ? BADGES[s.badge][1] : '') + (s.aVoir ? ' a voir' : '');
+  const words = simple([s.t, s.type, badge, s.age, s.price, s.where, s.place, s.metro, s.duration, s.why, s.tip].join(' ')).split(' ');
+  return ' ' + words.map(stem).join(' ') + ' ' + words.join(' ') + ' ';
+}
 function matches(s) {
   if (F.q) {
-    const hay = norm([s.t, s.type, s.where, s.place, s.metro, s.why, s.tip].join(' '));
-    if (!norm(F.q).split(/\s+/).every(w => hay.includes(w))) return false;
+    const words = queryWords(F.q);
+    if (words.length) {
+      const hay = searchText(s);
+      if (!words.every(w => hay.includes(' ' + w))) return false;
+    }
   }
   if (F.age.length) {
     const r = ageRange(s);
@@ -625,24 +694,20 @@ function renderResults() {
   const tags = [];
   if (F.q) tags.push(['q', '', '« ' + F.q + ' »']);
   GROUPS.forEach(g => F[g.key].forEach(v => {
+    if (g.key === 'type' && !SORTIES.some(x => x.type === v)) return;
     const o = (g.opts || []).find(x => x[0] === v);
     tags.push([g.key, v, o ? o[1] : (LABELS[v] || v)]);
   }));
   if (F.rain) tags.push(['rain', '', LABELS.rain]);
   return `<div class="v-head"><button class="icon-btn" data-go="#rechercher" aria-label="Modifier la recherche">${ICON.back}</button><h1>${list.length} sortie${list.length > 1 ? 's' : ''} trouvée${list.length > 1 ? 's' : ''}</h1></div>
   ${tags.length ? `<div class="active-filters">${tags.map(([k, v, l]) => `<button class="chip" aria-pressed="true" data-rm="${k}" data-v="${esc(v)}" aria-label="Retirer le filtre ${esc(l)}">${esc(l)} ✕</button>`).join('')}</div>` : ''}
-  ${list.length ? `<div class="list">${list.map(s => `
-    <button class="row-card" data-open="${esc(s.id)}">
-      <span class="thumb">${visual(s)}</span>
-      <span>${badgeHtml(s)}<h3>${esc(s.t)}</h3><span class="facts">${factsHtml(s)}</span></span>
-      ${ICON.chev}
-    </button>`).join('')}</div>`
+  ${list.length ? sortBar() + rowCards(list)
   : `<div class="empty-box"><p>Aucune sortie ne correspond à tous ces critères. Retirez un filtre pour voir plus d’idées.</p><button class="btn soft" data-go="#rechercher">Modifier la recherche</button></div>`}`;
 }
 
 function previewCount(q) {
   const saved = F; resetF();
-  if (q === 'free') F.budget = ['free']; else if (q === 'type:Spectacle') F.type = ['Spectacle', 'Théâtre', 'Theatre'];
+  if (q === 'free') F.budget = ['free']; else if (q === 'type:Spectacle') F.type = ['Spectacle', 'Théâtre', 'Theatre']; else if (q === 'type:Manger') F.type = ['Restaurant', 'Goûter', 'Gouter', 'Manger'];
   const n = results().length; F = saved; return n;
 }
 function quick(q) {
@@ -652,6 +717,7 @@ function quick(q) {
   else if (q === 'metro') F.ou = ['metro'];
   else if (q.startsWith('age:')) F.age = [q.slice(4)];
   else if (q === 'type:Spectacle') F.type = ['Spectacle', 'Théâtre', 'Theatre'];
+  else if (q === 'type:Manger') F.type = ['Restaurant', 'Goûter', 'Gouter', 'Manger'];
   location.hash = 'resultats';
 }
 
@@ -855,6 +921,12 @@ document.addEventListener('click', e => {
   if (e.target.closest('[data-share]')) { share(); return; }
   const tab = e.target.closest('[data-tab]');
   if (tab) { location.hash = ({ search: 'rechercher', favs: 'favoris', idea: 'idee', coeur: 'coups-de-coeur' })[tab.dataset.tab] || ''; return; }
+  const so = e.target.closest('[data-sort]');
+  if (so) {
+    SORT = so.dataset.sort;
+    if (SORT === 'distance' && !USERPOS) { askPosition(); return; }
+    const y = window.scrollY; route(); window.scrollTo(0, y); return;
+  }
   const chip = e.target.closest('[data-f]');
   if (chip) {
     const k = chip.dataset.f, v = chip.dataset.v, on = !F[k].includes(v);
