@@ -213,6 +213,21 @@ body[data-view="home"] #view{display:none}
 .about p{font-family:var(--serif);font-size:20px;line-height:1.55;margin:0 0 16px;max-width:36ch}
 .about .btn{margin-top:8px}
 .about .made{margin-top:28px;font-size:13px;color:var(--ink-soft)}
+.map-cta{padding:22px 18px 0}
+.map-cta .btn{width:100%;justify-content:center}
+.map-wrap{position:relative;margin:8px 12px 0;border-radius:18px;overflow:hidden;border:1px solid var(--line);height:calc(100vh - 230px);height:calc(100dvh - 230px);min-height:340px;background:#EEE8E2}
+#map{position:absolute;inset:0}
+.map-msg{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:var(--ink-soft);font-size:15px}
+.pin{width:34px;height:34px;display:grid;place-items:center;filter:drop-shadow(0 2px 3px rgba(30,42,90,.35))}
+.pin svg{width:34px;height:34px}
+.leaflet-popup-content-wrapper{border-radius:14px!important;font-family:var(--sans)!important}
+.leaflet-popup-content{margin:12px 14px!important}
+.pop h3{font-family:var(--serif);font-size:19px;font-weight:600;margin:0 0 4px;line-height:1.15;color:#1E2A5A}
+.pop p{margin:0 0 8px!important;font-size:13px;color:#5A6386}
+.pop a{font-weight:700;color:#A8325A!important;text-decoration:none}
+.map-note{padding:8px 18px 0;font-size:13px;color:var(--ink-soft)}
+.d-map{display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:14px;font-weight:700;color:var(--pink-ink);text-decoration:none}
+.d-map svg{width:16px;height:16px}
 </style>
 </head>
 <body data-view="home">
@@ -299,9 +314,11 @@ body[data-view="home"] #view{display:none}
   </div>
 </section>
 
+<div class="map-cta"><button class="btn soft" data-go="#carte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 6.5l5.5-2 6 2 5.5-2v13l-5.5 2-6-2-5.5 2z"/><path d="M9 4.5v13M15 6.5v13"/></svg>La carte des sorties</button></div>
+
 <section aria-labelledby="picks-t">
   <div class="sec-head">
-    <h2 id="picks-t"><svg class="h" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="currentColor"/></svg>Mes coups de cœur</h2>
+    <h2 id="picks-t">FOCUS</h2>
   </div>
   <div class="picks" id="picks"></div>
 </section>
@@ -321,7 +338,7 @@ body[data-view="home"] #view{display:none}
   <ul>
     <li><button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-6.5 8 6.5V20h-5.5v-5h-5v5H4z"/></svg>Accueil</button></li>
     <li><button data-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>Rechercher</button></li>
-    <li><button data-soon="Les sélections"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Sélections</button></li>
+    <li><button data-tab="coeur"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>Coups de 🤍</button></li>
     <li><button data-tab="idea"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>Idée</button></li>
     <li><button data-tab="favs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.5 3.5h11v17l-5.5-4-5.5 4z"/></svg>Mes favoris</button></li>
   </ul>
@@ -343,6 +360,7 @@ const ICON = {
   star:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>',
   sparkle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>',
   insta:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".6" fill="currentColor"/></svg>',
+  map:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 6.5l5.5-2 6 2 5.5-2v13l-5.5 2-6-2-5.5 2z"/><path d="M9 4.5v13M15 6.5v13"/></svg>',
   chev:'<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>'
 };
 
@@ -367,7 +385,7 @@ const ART = {
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/1kjyabYves-u_0SZ_IBRGILnxSW8kFjRmTbK-V0YSOtY/gviz/tq?tqx=out:csv&headers=1&sheet=Sorties';
 
 const DEMO = [
-  {nom:'Métamorphoses au 19M', categorie:'Expo', etiquette:'Coup de cœur', en_ce_moment:'oui', age:'Dès 6 ans', prix:'12 €', arrondissement:'Paris 19e', lieu:'Porte d’Aubervilliers', duree:'Environ 1h30', metro:'Porte d’Aubervilliers', lien_reservation:'',
+  {nom:'Métamorphoses au 19M', categorie:'Expo', etiquette:'Coup de cœur', en_ce_moment:'oui', age:'Dès 6 ans', prix:'12 €', arrondissement:'Paris 19e', lieu:'Porte d’Aubervilliers', coordonnees:'48.8986, 2.3878', duree:'Environ 1h30', metro:'Porte d’Aubervilliers', lien_reservation:'',
    pourquoi_jaime:'Une expo très esthétique autour des savoir-faire et des métiers d’art. Gros coup de cœur pour la Maison Michel et notamment ce chapeau qui semble naître directement du bois.',
    mon_conseil:'Parfait pour une sortie avec les enfants qui aiment découvrir les coulisses de la création.', photo:'', _art:'hat'},
   {nom:'Seokguram', categorie:'Expo', etiquette:'Gratuit', en_ce_moment:'oui', age:'Dès 6 ans', prix:'Gratuit', arrondissement:'Paris 3e', _art:'stupa'},
@@ -407,6 +425,15 @@ function rowsToObjects(rows) {
   return rows.slice(1).map(r => { const o = {}; keys.forEach((k, i) => o[k] = (r[i] || '').trim()); return o; }).filter(o => o.nom);
 }
 
+function parseGeo(v) {
+  let t = String(v || '').replace(/\s+/g, '');
+  if (!t) return null;
+  let parts = t.includes(';') ? t.split(';') : (t.match(/-?\d+(?:\.\d+)?/g) || []);
+  if (parts.length !== 2) parts = t.match(/-?\d+(?:,\d+)?/g) || [];
+  if (parts.length !== 2) return null;
+  const [a, b] = parts.map(x => parseFloat(String(x).replace(',', '.')));
+  return isFinite(a) && isFinite(b) && Math.abs(a) <= 90 && Math.abs(b) <= 180 ? [a, b] : null;
+}
 function photoUrl(v) {
   v = (v || '').trim();
   if (!v) return '';
@@ -425,7 +452,7 @@ function toSortie(o, i, used) {
     featured: /^(oui|o|x|yes|y|1|vrai|true)$/.test(norm(o.en_ce_moment)),
     age: o.age || '', price: o.prix || '', where: o.arrondissement || '', place: o.lieu || '',
     duration: o.duree || '', metro: o.metro || '', url: o.lien_de_reservation || o.lien_reservation || o.reservation || o.lien || '',
-    why: o.pourquoi_jaime || '', tip: o.mon_conseil || '', photos: String(o.photo || o.photos || '').split(/[\s,;]+/).map(photoUrl).filter(Boolean), art: o._art || '', order: i
+    why: o.pourquoi_jaime || '', tip: o.mon_conseil || '', geo: parseGeo(o.coordonnees || o.coordonnees_gps || ''), photos: String(o.photo || o.photos || '').split(/[\s,;]+/).map(photoUrl).filter(Boolean), art: o._art || '', order: i
   };
 }
 const build = list => { const used = new Set(); return list.map((o, i) => { const s = toSortie(o, i, used); s.photo = s.photos[0] || ''; return s; }); };
@@ -502,6 +529,7 @@ function renderDetail(s) {
       <div class="tags">${s.type ? `<span class="badge b-type">${esc(s.type)}</span>` : ''}${badgeHtml(s)}</div>
       <h1>${esc(s.t)}</h1>
       ${s.where || s.place ? `<p class="loc">${ICON.pin}${esc([s.where, s.place].filter(Boolean).join(', '))}</p>` : ''}
+      ${s.geo ? `<a class="d-map" href="#carte/${encodeURIComponent(s.id)}">${ICON.map}Voir sur la carte</a>` : ''}
       ${facts ? `<div class="d-facts">${facts}</div>` : '<div style="height:20px"></div>'}
       <h2>Pourquoi j’aime ${ICON.heart.replace('fill="none"', 'fill="currentColor"')}</h2>
       <p class="why ${s.why ? '' : 'empty'}">${s.why ? esc(s.why).replace(/\n/g, '<br>') : 'Mon avis arrive très bientôt.'}</p>
@@ -656,6 +684,70 @@ function renderFavs() {
   : `<div class="empty-box" style="margin-top:12px"><p>Touchez le cœur d’une sortie pour la retrouver ici.</p><button class="btn soft" data-go="#toutes">Voir toutes les sorties</button></div>`}`;
 }
 
+/* ---------- Carte ---------- */
+let leafletReady = null, mapObj = null;
+function loadLeaflet() {
+  if (window.L) return Promise.resolve();
+  if (leafletReady) return leafletReady;
+  leafletReady = new Promise((ok, ko) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    js.onload = ok; js.onerror = () => { leafletReady = null; ko(); };
+    document.head.appendChild(js);
+  });
+  return leafletReady;
+}
+function renderMap(focusId) {
+  const pts = SORTIES.filter(s => s.geo);
+  const missing = SORTIES.length - pts.length;
+  return `<div class="v-head"><button class="icon-btn" data-go="${focusId ? '#sortie/' + encodeURIComponent(focusId) : ''}" aria-label="Retour">${ICON.back}</button><h1>La carte des sorties</h1></div>
+  <div class="map-wrap"><div id="map" role="region" aria-label="Carte des sorties"></div><div class="map-msg" id="map-msg">Chargement de la carte…</div></div>
+  ${missing > 0 && pts.length ? `<p class="map-note">${missing} sortie${missing > 1 ? 's' : ''} pas encore placée${missing > 1 ? 's' : ''} sur la carte.</p>` : ''}`;
+}
+async function drawMap(focusId) {
+  const msg = document.getElementById('map-msg');
+  const pts = SORTIES.filter(s => s.geo);
+  if (!pts.length) { msg.textContent = 'Les sorties apparaîtront ici dès que leurs coordonnées seront renseignées.'; return; }
+  try { await loadLeaflet(); } catch (e) { msg.textContent = 'La carte n’a pas pu être chargée. Vérifiez votre connexion.'; return; }
+  if (!document.getElementById('map')) return;
+  msg.remove();
+  if (mapObj) { try { mapObj.remove(); } catch (e) {} mapObj = null; }
+  mapObj = L.map('map', { zoomControl: true, attributionControl: true }).setView([48.8566, 2.3522], 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19, subdomains: 'abcd',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+  }).addTo(mapObj);
+  const pinSvg = c => `<svg viewBox="0 0 24 24"><path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z" fill="${c}" stroke="#fff" stroke-width="1.5"/><path d="M12 13.2c-2.2-1.6-3-2.7-3-3.6 0-1 .8-1.6 1.6-1.6.6 0 1.1.4 1.4.8.3-.4.8-.8 1.4-.8.8 0 1.6.6 1.6 1.6 0 .9-.8 2-3 3.6z" fill="#fff"/></svg>`;
+  const markers = [];
+  pts.forEach(s => {
+    const icon = L.divIcon({ className: '', html: `<div class="pin">${pinSvg(s.badge === 'coeur' ? '#E5638C' : '#1E2A5A')}</div>`, iconSize: [34, 34], iconAnchor: [17, 32], popupAnchor: [0, -28] });
+    const m = L.marker(s.geo, { icon, title: s.t }).addTo(mapObj)
+      .bindPopup(`<div class="pop"><h3>${esc(s.t)}</h3><p>${esc([s.type, s.where, s.price].filter(Boolean).join(' · '))}</p><a href="#sortie/${encodeURIComponent(s.id)}">Voir la fiche →</a></div>`);
+    m._sid = s.id; markers.push(m);
+  });
+  const focus = focusId && markers.find(m => m._sid === focusId);
+  if (focus) { mapObj.setView(focus.getLatLng(), 15); focus.openPopup(); }
+  else if (markers.length > 1) mapObj.fitBounds(L.featureGroup(markers).getBounds().pad(0.15), { maxZoom: 14 });
+  else mapObj.setView(markers[0].getLatLng(), 14);
+}
+
+/* ---------- Coups de cœur ---------- */
+function renderCoeur() {
+  const list = SORTIES.filter(s => s.badge === 'coeur');
+  return `<div class="v-head"><button class="icon-btn" data-go="" aria-label="Retour à l’accueil">${ICON.back}</button><h1>Mes coups de 🤍</h1></div>
+  ${list.length ? `<p class="v-sub">Les sorties que nous avons adorées.</p>
+  <div class="list">${list.map(s => `
+    <button class="row-card" data-open="${esc(s.id)}">
+      <span class="thumb">${visual(s)}</span>
+      <span>${s.type ? `<span class="badge b-type">${esc(s.type)}</span>` : ''}<h3>${esc(s.t)}</h3><span class="facts">${factsHtml(s)}</span></span>
+      ${ICON.chev}
+    </button>`).join('')}</div>`
+  : `<div class="empty-box" style="margin-top:12px"><p>Mes coups de cœur arrivent très bientôt.</p></div>`}`;
+}
+
 /* ---------- Idée ---------- */
 function renderIdea() {
   return `<div class="v-head"><button class="icon-btn" data-go="" aria-label="Retour à l’accueil">${ICON.back}</button><h1>Une idée de sortie ?</h1></div>
@@ -698,7 +790,7 @@ async function loadAbout() {
 function show(name, html) {
   document.body.dataset.view = name;
   if (html != null) document.getElementById('view').innerHTML = html;
-  const cur = name === 'home' ? 'home' : (name === 'filters' || name === 'results') ? 'search' : name === 'favs' ? 'favs' : name === 'idea' ? 'idea' : '';
+  const cur = name === 'home' ? 'home' : (name === 'filters' || name === 'results') ? 'search' : name === 'favs' ? 'favs' : name === 'idea' ? 'idea' : name === 'coeur' ? 'coeur' : '';
   document.querySelectorAll('.nav [data-tab]').forEach(b => b.dataset.tab === cur ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
 }
 let lastHash = null;
@@ -718,6 +810,8 @@ function route() {
   else if (h === 'rechercher') show('filters', renderFilters());
   else if (h === 'favoris') show('favs', renderFavs());
   else if (h === 'idee') show('idea', renderIdea());
+  else if (h === 'coups-de-coeur') show('coeur', renderCoeur());
+  else if (h === 'carte' || (m = h.match(/^carte\/(.+)$/))) { const fid = m && m[1] ? decodeURIComponent(m[1]) : null; show('map', renderMap(fid)); drawMap(fid); }
   else if (h === 'a-propos') show('about', renderAbout());
   else if (h === 'resultats') show('results', renderResults());
   else { renderHome(); show('home'); }
@@ -754,7 +848,7 @@ document.addEventListener('click', e => {
   if (go) { location.hash = go.dataset.go; return; }
   if (e.target.closest('[data-share]')) { share(); return; }
   const tab = e.target.closest('[data-tab]');
-  if (tab) { location.hash = ({ search: 'rechercher', favs: 'favoris', idea: 'idee' })[tab.dataset.tab] || ''; return; }
+  if (tab) { location.hash = ({ search: 'rechercher', favs: 'favoris', idea: 'idee', coeur: 'coups-de-coeur' })[tab.dataset.tab] || ''; return; }
   const chip = e.target.closest('[data-f]');
   if (chip) {
     const k = chip.dataset.f, v = chip.dataset.v, on = !F[k].includes(v);
