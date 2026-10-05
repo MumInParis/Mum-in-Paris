@@ -689,15 +689,21 @@ let leafletReady = null, mapObj = null;
 function loadLeaflet() {
   if (window.L) return Promise.resolve();
   if (leafletReady) return leafletReady;
-  leafletReady = new Promise((ok, ko) => {
-    const css = document.createElement('link');
-    css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css';
-    document.head.appendChild(css);
-    const js = document.createElement('script');
-    js.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-    js.onload = ok; js.onerror = () => { leafletReady = null; ko(); };
+  const SOURCES = [
+    ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css', 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'],
+    ['https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'],
+    ['https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css', 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js']
+  ];
+  const tryOne = i => new Promise((ok, ko) => {
+    if (i >= SOURCES.length) return ko(new Error('leaflet'));
+    const [cssUrl, jsUrl] = SOURCES[i];
+    const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = cssUrl; document.head.appendChild(css);
+    const js = document.createElement('script'); js.src = jsUrl;
+    js.onload = () => window.L ? ok() : tryOne(i + 1).then(ok, ko);
+    js.onerror = () => { css.remove(); js.remove(); tryOne(i + 1).then(ok, ko); };
     document.head.appendChild(js);
   });
+  leafletReady = tryOne(0).catch(e => { leafletReady = null; throw e; });
   return leafletReady;
 }
 function renderMap(focusId) {
